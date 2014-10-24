@@ -16,7 +16,7 @@ class SnpEff(tools.Tool):
 		if install_genomes==None:
 			install_genomes = [SnpEffGenome('zebov.sl',
 				'Zaire ebolavirus Sierra Leone G3686.1',
-				['KM034562.1'], ['http://www.ncbi.nlm.nih.gov/nuccore/661348725'])]
+				['KM034562.1'], ['data/snpEff-genomes/zebov.sl'], '-gb')]
 		self.install_genomes = install_genomes
 		super(SnpEff, self).__init__(install_methods = install_methods)
 	def version(self):
@@ -69,9 +69,18 @@ class DownloadAndConfigJar(tools.DownloadPackage):
 
 
 class SnpEffGenome:
-	def __init__(self, name, desc, chroms, chrom_urls, codonTableMap={}):
+	def __init__(self, id, desc, chroms, data_dir, build_opts='', codonTableMap={}):
+		self.id=id
+		self.desc=desc
+		self.chroms=chroms
+		self.data_dir=data_dir
+		self.build_opts=build_opts
+		self.codonTableMap=codonTableMap
+	def has_genome(self):
 		pass
 	def install_genome(self, tool):
+		if self.has_genome():
+			return
 		pass # check that it doesn't exist already
 		#zebov.k.genome : Zaire ebolavirus Kissidougou
 		#zebov.k.reference : http://www.ncbi.nlm.nih.gov/nuccore/KJ660346.1
