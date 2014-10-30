@@ -21,14 +21,14 @@ class LastTools(tools.Tool) :
         tools.Tool.__init__(self, install_methods = install_methods)
 
 class DownloadAndBuildLast(tools.DownloadPackage) :
-    lastWithVersion = 'last-490'
-    def __init__(self, subtoolName) :
-        url = 'http://last.cbrc.jp/{}.zip'.format(self.lastWithVersion)
-        target_rel_path = os.path.join(self.lastWithVersion, 'bin', subtoolName)
-        tools.DownloadPackage.__init__(self, url, target_rel_path)
-    def post_download(self) :
-        path = os.path.join(util.file.get_build_path(), self.lastWithVersion)
-        os.system('cd {}; make; make install prefix=.'.format(path))
+	lastWithVersion = 'last-490'
+	def __init__(self, subtoolName) :
+		url = 'http://last.cbrc.jp/{}.zip'.format(self.lastWithVersion)
+		target_rel_path = os.path.join(self.lastWithVersion, 'bin', subtoolName)
+		tools.DownloadPackage.__init__(self, url, target_rel_path)
+	def post_download(self) :
+		path = os.path.join(self.destination_dir, self.lastWithVersion)
+		os.system('cd {}; make; make install prefix=.'.format(path))
 
 class Lastal(LastTools) :
     subtoolName = 'lastal'

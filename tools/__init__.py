@@ -77,8 +77,10 @@ class InstallMethod(object):
         self.attempts = 0
     def is_attempted(self):
         return self.attempts
+    # Don't override this. Instead, override _attempt_install.
     def attempt_install(self):
         self.attempts += 1
+        self._attempt_install()
     def is_installed(self):
         raise NotImplementedError
     def executable_path(self):
@@ -117,9 +119,61 @@ class PrexistingUnixCommand(InstallMethod):
         return self.installed and self.path or None
 
 class DownloadPackage(InstallMethod):
-    ''' This is an install method for downloading, unpacking, and post-
-            processing straight from the source.
-        target_rel_path is the executable's path relative to destination_dir
+    ''' Base class for installation methods for a given tool.
+        None of these methods should ever fail/error. attempt_install should
+        return silently regardless of the outcome (is_installed must be
+        called to verify success or failure).
+    '''
+    def __init__(self):
+        self.attempts = 0
+    def is_attempted(self):
+        return self.attempts
+    def attempt_install(self): # Don't override this.
+                               # Instead, override _attempt_install.
+        self.attempts += 1
+        self._attempt_install()
+    def _attempt_install(self):
+        raise NotImplementedError
+    def is_installed(self):
+        raise NotImplementedError
+    def executable_path(self):
+        raise NotImplementedError
+
+class PrexistingUnixCommand(InstallMethod):
+    ''' This is an install method that tries to find whether an executable
+        binary already exists for free on the unix file system--it doesn't
+        actually try to install anything.
+    '''
+    def __init__(self, path, verifycmd=None, verifycode=0,
+                 require_executability=True):
+        self.path = path
+        self.verifycmd = verifycmd
+        self.verifycode = verifycode
+        self.installed = False
+        self.require_executability = require_executability
+        InstallMethod.__init__(self)
+    def _attempt_install(self):
+        if os.access(self.path, (os.X_OK | os.R_OK) if
+                self.require_executability else os.R_OK):
+            if self.verifycmd:
+                self.installed = (os.system(self.verifycmd) == self.verifycode)
+            else:
+                self.installed = True
+        else:
+            self.installed = False
+    def is_installed(self):
+        if not self.is_attempted():
+            self.attempt_install()
+        return self.installed
+    def executable_path(self):
+        return self.installed and self.path or None
+
+class DownloadPackage(InstallMethod):
+    ''' This is an install method for downloading, unpacking, and
+        post-processing something straight from the source.
+
+        target_rel_path is the path of the executable relative to
+            destination_dir
         destination_dir defaults to the project build directory
         post_download_command will be executed if it isn't None, in
             destination_dir.
@@ -136,13 +190,11 @@ class DownloadPackage(InstallMethod):
         self.destination_dir = destination_dir
         self.verifycmd = verifycmd
         self.verifycode = verifycode
-        self.attempted = False
         self.installed = False
         self.require_executability = require_executability
         self.post_download_command = post_download_command
         self.post_download_ret = post_download_ret
-    def is_attempted(self):
-        return self.attempted
+        InstallMethod.__init__(self)
     def is_installed(self):
         return self.installed
     def executable_path(self):
@@ -158,8 +210,7 @@ class DownloadPackage(InstallMethod):
         else:
             self.installed = False
         return self.installed
-    def attempt_install(self):
-        self.attempted = True
+    def _attempt_install(self):
         if not self.verify_install():
             self.pre_download()
             self.download()
@@ -180,8 +231,8 @@ class DownloadPackage(InstallMethod):
         self.unpack(download_dir)
     def post_download(self):
         if self.post_download_command:
-            return_code = os.system('cd "{}" && {}'.format(
-                self.destination_dir, self.post_download_command))
+            return_code = os.system('cd "{}" && {}'.format(self.destination_dir,
+                self.post_download_command))
             if self.post_download_ret != None:
                 assert return_code == self.post_download_ret
     def unpack(self, download_dir):
@@ -190,7 +241,6 @@ class DownloadPackage(InstallMethod):
         if self.download_file.endswith('.zip'):
             if os.system("unzip -o %s/%s -d %s > /dev/null" % (download_dir,
                 self.download_file, self.destination_dir)):
-
                 return
             else:
                 os.unlink("%s/%s" % (download_dir, self.download_file))
