@@ -26,11 +26,18 @@ class TestToolSamtools(unittest.TestCase) :
         result = open('{}.fai'.format(fasta), 'rb')
         expected = open( os.path.join(expectedDir, 'ebola_expected.fasta.fai'),
                          'rb')
-
         self.assertEqual(result.read(),
-                         expected.read() )
+                         expected.read())
 
         result.close(); expected.close()
+
+    def test_tool_samtools_view(self) :
+        """
+        TODO: Implement.  Need to find a really small .bam file for testing
+        Could also test annother command so long as has more than one argument
+        and/or multiple options
+        """
+        pass
 
 if __name__ == '__main__':
     unittest.main()
