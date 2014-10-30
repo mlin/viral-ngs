@@ -2,13 +2,11 @@
 import tools
 import os
 
-# TODO: specify version in config file
-VERSION="2.2.29+"
-
+VERSION='2.2.29+'
 URL_BASE = ''.join([
     'ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-',
     VERSION
-])
+    ])
 
 def get_url() :
     uname = os.uname()
@@ -23,7 +21,6 @@ def get_url() :
         raise NotImplementedError('OS {} not implemented'.format(uname[0]))
     return '{}-{}.tar.gz'.format(URL_BASE, osStr)
 
-
 class BlastTools(tools.Tool) :
     """
     Base class for tools in the blast+ suite.
@@ -34,12 +31,11 @@ class BlastTools(tools.Tool) :
     """
     def __init__(self, install_methods = None) :
         if install_methods == None :
-            url = get_url()
-            target_rel_path = 'ncbi-{}/bin/{}'.format(VERSION,
+            target_rel_path = 'ncbi-blast-{}/bin/{}'.format(VERSION,
                     self.subtoolName)
+            url = get_url()
             install_methods = [tools.DownloadPackage(url, target_rel_path)]
         tools.Tool.__init__(self, install_methods = install_methods)
-
 
 class BlastnTool(BlastTools) :
     subtoolName = 'blastn'
