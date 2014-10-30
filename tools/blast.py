@@ -16,10 +16,7 @@ def get_url() :
     if uname[0] == 'Darwin' :
         osStr = 'universal-macosx'
     elif uname[0] == 'Linux' :
-        if uname[4].endswith('64') :
-            osStr = 'x64-linux'
-        else :
-            osStr = 'ia32-linux'
+        osStr = 'x64-linux' if uname[4].endswith('64') else 'ia32-linux'
     else :
         raise NotImplementedError('OS {} not implemented'.format(uname[0]))
     return '{}-{}.tar.gz'.format(URL_BASE, osStr)
@@ -70,7 +67,7 @@ class BlastTools(tools.Tool) :
             cmd))
         return os.system(cmd)
 
-class BlastnTool(BlastTools) :
+class BlastN(BlastTools) :
     subtoolName = 'blastn'
 
 
