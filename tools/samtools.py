@@ -18,7 +18,7 @@ install_methods.append(tools.PrexistingUnixCommand(path))
 TODO: either make this or don't and remove the comment
 """
 
-class SamtoolsTool(tools.ExecutableToolWithSubcommands) :
+class Samtools(tools.ExecutableToolWithSubcommands) :
     execName = 'samtools'
 
     def __init__(self, install_methods = None) :
