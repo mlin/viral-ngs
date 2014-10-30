@@ -67,6 +67,49 @@ class Tool(object):
         self.install()
         return self.executable_path()
 
+
+"""
+Subclass of tool for packages where you call the binary first, and then a
+a subcommand followed by appropriate arguments and options.
+
+Invocation template:
+    <executable> <command> [options] <args>
+
+Example:
+    bwa aln -t 4 -f output.sai reference.fasta input.fastq
+"""
+class ExecutableToolWithSubcommands(Tool):
+    execName = None
+
+    def execute(self, subcommand, args=[], options={}, option_string="",
+            post_cmd=""):
+        """
+        args are required arguments for the specified subcommand
+            (order matters for execution)
+        options may be specified as key-value pairs of the form (flag: value)
+            Leading dashes, ('-' or '--'), should be included in the key
+            For flags without value arguments, value should equal the empty str
+            (order does not matter for execution)
+        option_string spefifies options in a preformatted string.
+            An alternative to options, but may be use in conjuction as well.
+        post_cmd is appended to the end of the command.  It is intended to be
+            used as a pipe ("| <other shell command>"), or to store output
+            ( "> output.sai")
+        """
+        if self.execName is None:
+            raise NotImplementedError
+
+        arg_str = " ".join(args)
+        option_str = '{} {}'.format(' '.join([ "{} {}".format(k, v) for k, v in
+                                                options.items() ]),
+                                    option_string
+                                    )
+        cmd =  "{self.exec_path} {subcommand} {option_str} {arg_str} {post_cmd}" \
+            .format(**locals())
+        log.debug("Calling {} with cmd: {}".format(self.execName, cmd))
+        return os.system(cmd)
+
+
 class InstallMethod(object):
     ''' Base class for installation methods for a given tool.
         None of these methods should ever fail/error. attempt_install should
