@@ -324,13 +324,11 @@ def main_partition_bmtagger(args) :
     outMatch = args.outMatch
     outNoMatch = args.outNoMatch
     assert outMatch or outNoMatch
-    # comment this out until we can figure out why bmtagger -X fails only on Travis
-    #if outMatch==None:
-    #    deplete_bmtagger(inFastq1, inFastq2, databases, outNoMatch[0], outNoMatch[1])
-    #else:
-    #    partition_bmtagger(inFastq1, inFastq2, databases, outMatch, outNoMatch)
-    #return 0
-    partition_bmtagger(inFastq1, inFastq2, databases, outMatch, outNoMatch)
+    if outMatch==None:
+        deplete_bmtagger(inFastq1, inFastq2, databases, outNoMatch[0], outNoMatch[1])
+    else:
+        partition_bmtagger(inFastq1, inFastq2, databases, outMatch, outNoMatch)
+    return 0
 __commands__.append(('partition_bmtagger', main_partition_bmtagger,
                      parser_partition_bmtagger))
 
